@@ -52,8 +52,9 @@ router.route('/')
       if (err) return res.send(err);
 
       let categoryId = req.body.category;
+
       // Get category
-      if (categoryId !== null) {
+      if (categoryId) {
         Category.findById(categoryId, (err, category) => {
           if (err) return res.send(err);
 
@@ -62,9 +63,12 @@ router.route('/')
           category.save((err) => {
             if (err) return res.send(err);
 
-            res.json({ message: 'Product created!' });
+            return res.json({ message: 'Product created!', data: product });
           })
         });
+      }
+      else {
+        return res.json({ message: 'Product created!', data: product });
       }
     });
   });
@@ -93,7 +97,7 @@ router.route('/:id')
         if (err)
           return res.send(err);
 
-        res.json({ message: 'Product updated!' });
+        res.json({ message: 'Product updated!', data: product });
       });
 
     });

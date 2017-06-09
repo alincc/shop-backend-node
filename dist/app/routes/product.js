@@ -64,8 +64,9 @@ router.route('/').get(function (req, res) {
     if (err) return res.send(err);
 
     var categoryId = req.body.category;
+
     // Get category
-    if (categoryId !== null) {
+    if (categoryId) {
       _Category2.default.findById(categoryId, function (err, category) {
         if (err) return res.send(err);
 
@@ -74,9 +75,11 @@ router.route('/').get(function (req, res) {
         category.save(function (err) {
           if (err) return res.send(err);
 
-          res.json({ message: 'Product created!' });
+          return res.json({ message: 'Product created!', data: product });
         });
       });
+    } else {
+      return res.json({ message: 'Product created!', data: product });
     }
   });
 });
@@ -97,7 +100,7 @@ router.route('/:id').get(function (req, res) {
     product.save(function (err) {
       if (err) return res.send(err);
 
-      res.json({ message: 'Product updated!' });
+      res.json({ message: 'Product updated!', data: product });
     });
   });
 }).delete(function (req, res) {
