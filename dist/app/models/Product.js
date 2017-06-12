@@ -17,6 +17,8 @@ var ProductSchema = new Schema({
   name: String,
   description: String,
   image: String,
+  quantity: { type: Number, default: 0 },
+  active: { type: Boolean, default: true },
   price: Number
 });
 

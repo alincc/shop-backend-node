@@ -45,7 +45,7 @@ router.route('/search').get(function (req, res) {
 });
 
 router.route('/').get(function (req, res) {
-  _Product2.default.find(function (err, products) {
+  _Product2.default.find().populate('category').exec(function (err, products) {
     if (err) return res.status(500).send(err);
     if (!products) return res.status(404).send({ data: null, message: 'No products found', status: 404 });
 
@@ -59,6 +59,8 @@ router.route('/').get(function (req, res) {
   product.description = req.body.description;
   product.image = req.body.image;
   product.price = req.body.price;
+  product.quantity = req.body.quantity;
+  product.active = req.body.active;
 
   product.save(function (err) {
     if (err) return res.send(err);
@@ -95,7 +97,15 @@ router.route('/:id').get(function (req, res) {
   _Product2.default.findById(req.params.id, function (err, product) {
     if (err) return res.send(err);
 
+    console.log(req.body);
+
     product.name = req.body.name;
+    product.category = req.body.category;
+    product.description = req.body.description;
+    product.image = req.body.image;
+    product.price = req.body.price;
+    product.quantity = req.body.quantity;
+    product.active = req.body.active;
 
     product.save(function (err) {
       if (err) return res.send(err);

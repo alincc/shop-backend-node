@@ -31,12 +31,15 @@ router.route('/search')
 
 router.route('/')
   .get((req, res) => {
-    Product.find((err, products) => {
-      if (err) return res.status(500).send(err);
-      if (!products) return res.status(404).send({ data: null, message: 'No products found', status: 404 });
+    Product
+      .find()
+      .populate('category')
+      .exec((err, products) => {
+        if (err) return res.status(500).send(err);
+        if (!products) return res.status(404).send({ data: null, message: 'No products found', status: 404 });
 
-      res.json(products);
-    })
+        res.json(products);
+    });
   })
 
   .post((req, res) => {
@@ -47,6 +50,8 @@ router.route('/')
     product.description = req.body.description;
     product.image = req.body.image;
     product.price = req.body.price;
+    product.quantity = req.body.quantity;
+    product.active = req.body.active;
 
     product.save((err) => {
       if (err) return res.send(err);
@@ -91,7 +96,15 @@ router.route('/:id')
       if (err)
         return res.send(err);
 
+      console.log(req.body);
+
       product.name = req.body.name;
+      product.category = req.body.category;
+      product.description = req.body.description;
+      product.image = req.body.image;
+      product.price = req.body.price;
+      product.quantity = req.body.quantity;
+      product.active = req.body.active;
 
       product.save((err) => {
         if (err)
