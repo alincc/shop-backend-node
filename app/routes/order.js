@@ -33,6 +33,7 @@ router.route('/')
     order.shipping = req.body.shipping;
     order.payment = req.body.payment;
     order.status = 0;
+    order.statusLog.push({ status: 0 });
 
     order.save()
       .then(order => {
@@ -55,7 +56,7 @@ router.route('/:id')
   .get((req, res) => {
     Order
       .findById(req.params.id)
-      .populate('customer items.product shipping payment')
+      .populate('customer items.product shipping.value payment')
       .exec((err, order) => {
         if (err) return res.status(500).send(err);
         if (!order) return res.status(404).send({ data: null, message: 'The order was not found', status: 404 });
@@ -65,19 +66,29 @@ router.route('/:id')
   })
 
   .put((req, res) => {
-    Order.findById(req.params.id, (err, order) => {
-      if (err)
-        return res.send(err);
 
-      order.name = req.body.name;
+    let body = req.body || {}
 
-      order.save((err) => {
-        if (err)
-          return res.send(err);
+    Order
+      .findByIdAndUpdate(req.params.id, body, {new: true})
+      .populate('customer items.product shipping.value payment')
+      .exec((err, order) => {
+        if (err) return res.send(err);
 
-        return res.json({ message: 'Order updated!' });
-      });
+        if (!order.statusLog.find(log => log.status === body.status) &&
+          body.status !== null &&
+          typeof body.status != 'undefined'
+        ) {
+          order.statusLog.push({
+            status: body.status,
+          });
 
+          order.save(err => {
+            if (err) return res.send(err);
+          });
+        }
+
+        return res.json({ message: 'Order updated!', data: order });
     });
   })
 

@@ -20,7 +20,11 @@ var CustomerSchema = new Schema({
   email: { type: String, required: true }, // TODO: should be required
   country: { type: String, required: true },
   phone: { type: String, required: true },
-  orders: [{ type: Schema.Types.ObjectId, ref: 'Order' }]
+  orders: [{ type: Schema.Types.ObjectId, ref: 'Order' }],
+  active: { type: Boolean, default: true },
+  note: { type: String, default: '' }
+}, {
+  timestamps: true
 });
 
 exports.default = _mongoose2.default.model('Customer', CustomerSchema);

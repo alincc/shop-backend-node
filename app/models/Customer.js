@@ -11,6 +11,10 @@ const CustomerSchema   = new Schema({
   country: { type: String, required: true },
   phone: { type: String, required: true },
   orders: [{ type: Schema.Types.ObjectId, ref: 'Order' }],
+  active: { type: Boolean, default: true },
+  note: { type: String, default: '' },
+}, {
+  timestamps: true,
 });
 
 export default mongoose.model('Customer', CustomerSchema);

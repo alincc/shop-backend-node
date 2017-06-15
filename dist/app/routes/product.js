@@ -97,8 +97,6 @@ router.route('/:id').get(function (req, res) {
   _Product2.default.findById(req.params.id, function (err, product) {
     if (err) return res.send(err);
 
-    console.log(req.body);
-
     product.name = req.body.name;
     product.category = req.body.category;
     product.description = req.body.description;

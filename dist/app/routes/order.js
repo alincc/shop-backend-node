@@ -71,23 +71,32 @@ router.route('/').get(function (req, res) {
 });
 
 router.route('/:id').get(function (req, res) {
-  _Order2.default.findById(req.params.id).populate('customer items.product shipping payment').exec(function (err, order) {
+  _Order2.default.findById(req.params.id).populate('customer items.product shipping.value payment').exec(function (err, order) {
     if (err) return res.status(500).send(err);
     if (!order) return res.status(404).send({ data: null, message: 'The order was not found', status: 404 });
 
     return res.json(order);
   });
 }).put(function (req, res) {
-  _Order2.default.findById(req.params.id, function (err, order) {
+
+  var body = req.body || {};
+
+  _Order2.default.findByIdAndUpdate(req.params.id, body, { new: true }).populate('customer items.product shipping.value payment').exec(function (err, order) {
     if (err) return res.send(err);
 
-    order.name = req.body.name;
+    if (!order.statusLog.find(function (log) {
+      return log.status === body.status;
+    }) && body.status !== null && typeof body.status != 'undefined') {
+      order.statusLog.push({
+        status: body.status
+      });
 
-    order.save(function (err) {
-      if (err) return res.send(err);
+      order.save(function (err) {
+        if (err) return res.send(err);
+      });
+    }
 
-      return res.json({ message: 'Order updated!' });
-    });
+    return res.json({ message: 'Order updated!', data: order });
   });
 }).delete(function (req, res) {
   _Order2.default.remove({

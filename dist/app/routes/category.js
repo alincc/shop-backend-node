@@ -52,16 +52,12 @@ router.route('/:id').get(function (req, res) {
     res.json(category);
   });
 }).put(function (req, res) {
-  _Category2.default.findById(req.params.id, function (err, category) {
+  var body = req.body || {};
+
+  _Category2.default.findByIdAndUpdate(req.params.id, body, { new: true }).populate('products').exec(function (err, category) {
     if (err) return res.send(err);
 
-    category.name = req.body.name;
-
-    category.save(function (err) {
-      if (err) return res.send(err);
-
-      res.json({ message: 'Category updated!' });
-    });
+    return res.json({ message: 'Category updated!', data: category });
   });
 }).delete(function (req, res) {
   _Category2.default.remove({

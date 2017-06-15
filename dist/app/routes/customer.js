@@ -42,6 +42,7 @@ router.route('/').get(function (req, res) {
   customer.country = req.body.country;
   customer.phone = req.body.phone;
   customer.email = req.body.email;
+  customer.note = req.body.note;
 
   customer.save(function (err) {
     if (err) return res.send(err);
@@ -51,26 +52,35 @@ router.route('/').get(function (req, res) {
 });
 
 router.route('/:id').get(function (req, res) {
-  _Customer2.default.findById(req.params.id, function (err, customer) {
+  _Customer2.default.findById(req.params.id)
+  // .populate('orders orders.payment')
+  .populate({
+    path: 'orders',
+    model: 'Order',
+    populate: {
+      path: 'payment',
+      model: 'Payment'
+    }
+  }).exec(function (err, customer) {
     if (err) return res.status(500).send(err);
     if (!customer) return res.status(404).send({ data: null, message: 'The customer was not found', status: 404 });
 
     res.json(customer);
   });
 }).put(function (req, res) {
-  _Customer2.default.findById(req.params.id, function (err, customer) {
+  var body = req.body || {};
+
+  _Customer2.default.findByIdAndUpdate(req.params.id, body, { new: true }, function (err, customer) {
     if (err) return res.send(err);
 
-    customer.firstname = req.body.firstname;
-    customer.lastname = req.body.lastname;
-    customer.address = req.body.address;
-    customer.postnumber = req.body.postnumber;
-    customer.country = req.body.country;
-    customer.phone = req.body.phone;
-    customer.orders = req.body.orders;
-    customer.email = req.body.email;
-
-    customer.save(function (err) {
+    customer.populate({
+      path: 'orders',
+      model: 'Order',
+      populate: {
+        path: 'payment',
+        model: 'Payment'
+      }
+    }, function (err, customer) {
       if (err) return res.send(err);
 
       res.json({ message: 'Customer updated!', data: customer });

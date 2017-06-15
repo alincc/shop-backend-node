@@ -96,8 +96,6 @@ router.route('/:id')
       if (err)
         return res.send(err);
 
-      console.log(req.body);
-
       product.name = req.body.name;
       product.category = req.body.category;
       product.description = req.body.description;

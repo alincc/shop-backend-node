@@ -31,6 +31,7 @@ router.route('/')
     customer.country = req.body.country;
     customer.phone = req.body.phone;
     customer.email = req.body.email;
+    customer.note = req.body.note;
 
     customer.save((err) => {
       if (err) return res.send(err);
@@ -41,33 +42,43 @@ router.route('/')
 
 router.route('/:id')
   .get((req, res) => {
-    Customer.findById(req.params.id, (err, customer) => {
-      if (err) return res.status(500).send(err);
-      if (!customer) return res.status(404).send({ data: null, message: 'The customer was not found', status: 404 });
+    Customer
+      .findById(req.params.id)
+      // .populate('orders orders.payment')
+      .populate({
+        path: 'orders',
+        model: 'Order',
+        populate: {
+          path: 'payment',
+          model: 'Payment',
+        },
+      })
+      .exec((err, customer) => {
+        if (err) return res.status(500).send(err);
+        if (!customer) return res.status(404).send({ data: null, message: 'The customer was not found', status: 404 });
 
-      res.json(customer);
-    });
+        res.json(customer);
+      });
   })
 
   .put((req, res) => {
-    Customer.findById(req.params.id, (err, customer) => {
+    let body = req.body || {}
+
+    Customer.findByIdAndUpdate(req.params.id, body, {new: true}, (err, customer) => {
       if (err) return res.send(err);
 
-      customer.firstname = req.body.firstname;
-      customer.lastname = req.body.lastname;
-      customer.address = req.body.address;
-      customer.postnumber = req.body.postnumber;
-      customer.country = req.body.country;
-      customer.phone = req.body.phone;
-      customer.orders = req.body.orders;
-      customer.email = req.body.email;
-
-      customer.save((err) => {
+      customer.populate({
+        path: 'orders',
+        model: 'Order',
+        populate: {
+          path: 'payment',
+          model: 'Payment',
+        },
+      }, (err, customer) => {
         if (err) return res.send(err);
 
         res.json({ message: 'Customer updated!', data: customer });
       });
-
     });
   })
 

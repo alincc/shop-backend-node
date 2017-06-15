@@ -49,19 +49,15 @@ router.route('/:id')
   })
 
   .put((req, res) => {
-    Category.findById(req.params.id, (err, category) => {
-      if (err)
-        return res.send(err);
+    let body = req.body || {}
 
-      category.name = req.body.name;
+    Category
+      .findByIdAndUpdate(req.params.id, body, {new: true})
+      .populate('products')
+      .exec((err, category) => {
+        if (err) return res.send(err);
 
-      category.save((err) => {
-        if (err)
-          return res.send(err);
-
-        res.json({ message: 'Category updated!' });
-      });
-
+        return res.json({ message: 'Category updated!', data: category });
     });
   })
 
