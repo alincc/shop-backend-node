@@ -8,9 +8,7 @@ var _express = require('express');
 
 var _express2 = _interopRequireDefault(_express);
 
-var _Shipping = require('../models/Shipping');
-
-var _Shipping2 = _interopRequireDefault(_Shipping);
+var _controllers = require('../controllers');
 
 var _idValidator = require('../common/id-validator');
 
@@ -23,58 +21,13 @@ router.use('/:id', function (req, res, next) {
     return res.status(404).send({ data: null, message: 'The shipping was not found', status: 404 });
   }
 
-  next();
+  return next();
 });
 
-router.route('/').get(function (req, res) {
-  _Shipping2.default.find(function (err, shipping) {
-    if (err) return res.send(err);
+router.route('/').get(_controllers.shippingCtrl.list).post(_controllers.shippingCtrl.create);
 
-    res.json(shipping);
-  });
-}).post(function (req, res) {
-  var shipping = new _Shipping2.default();
+router.route('/:id').get(_controllers.shippingCtrl.get).put(_controllers.shippingCtrl.update).delete(_controllers.shippingCtrl.remove);
 
-  shipping.name = req.body.name;
-  shipping.price = req.body.price;
-  shipping.description = req.body.description;
-
-  shipping.save(function (err) {
-    if (err) return res.send(err);
-
-    res.json({ message: 'Shipping created!', data: shipping });
-  });
-});
-
-router.route('/:id').get(function (req, res) {
-  _Shipping2.default.findById(req.params.id, function (err, shipping) {
-    if (err) return res.status(500).send(err);
-    if (!shipping) return res.status(404).send({ data: null, message: 'The shipping was not found', status: 404 });
-
-    res.json(shipping);
-  });
-}).put(function (req, res) {
-  _Shipping2.default.findById(req.params.id, function (err, shipping) {
-    if (err) return res.send(err);
-
-    shipping.name = req.body.name;
-    shipping.price = req.body.price;
-    shipping.description = req.body.description;
-
-    shipping.save(function (err) {
-      if (err) return res.send(err);
-
-      res.json({ message: 'Shipping updated!', data: shipping });
-    });
-  });
-}).delete(function (req, res) {
-  _Shipping2.default.remove({
-    _id: req.params.id
-  }, function (err, shipping) {
-    if (err) return res.send(err);
-
-    res.json({ message: 'Successfully deleted!' });
-  });
-});
+router.param('id', _controllers.shippingCtrl.load);
 
 exports.default = router;

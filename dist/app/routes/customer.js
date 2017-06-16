@@ -8,9 +8,7 @@ var _express = require('express');
 
 var _express2 = _interopRequireDefault(_express);
 
-var _Customer = require('../models/Customer');
-
-var _Customer2 = _interopRequireDefault(_Customer);
+var _controllers = require('../controllers');
 
 var _idValidator = require('../common/id-validator');
 
@@ -23,77 +21,13 @@ router.use('/:id', function (req, res, next) {
     return res.status(404).send({ data: null, message: 'The customer was not found', status: 404 });
   }
 
-  next();
+  return next();
 });
 
-router.route('/').get(function (req, res) {
-  _Customer2.default.find(function (err, customers) {
-    if (err) return res.send(err);
+router.route('/').get(_controllers.customerCtrl.list).post(_controllers.customerCtrl.create);
 
-    res.json(customers);
-  });
-}).post(function (req, res) {
-  var customer = new _Customer2.default();
+router.route('/:id').get(_controllers.customerCtrl.get).put(_controllers.customerCtrl.update).delete(_controllers.customerCtrl.remove);
 
-  customer.firstname = req.body.firstname;
-  customer.lastname = req.body.lastname;
-  customer.address = req.body.address;
-  customer.postnumber = req.body.postnumber;
-  customer.country = req.body.country;
-  customer.phone = req.body.phone;
-  customer.email = req.body.email;
-  customer.note = req.body.note;
-
-  customer.save(function (err) {
-    if (err) return res.send(err);
-
-    res.json({ message: 'Customer created!', data: customer });
-  });
-});
-
-router.route('/:id').get(function (req, res) {
-  _Customer2.default.findById(req.params.id)
-  // .populate('orders orders.payment')
-  .populate({
-    path: 'orders',
-    model: 'Order',
-    populate: {
-      path: 'payment',
-      model: 'Payment'
-    }
-  }).exec(function (err, customer) {
-    if (err) return res.status(500).send(err);
-    if (!customer) return res.status(404).send({ data: null, message: 'The customer was not found', status: 404 });
-
-    res.json(customer);
-  });
-}).put(function (req, res) {
-  var body = req.body || {};
-
-  _Customer2.default.findByIdAndUpdate(req.params.id, body, { new: true }, function (err, customer) {
-    if (err) return res.send(err);
-
-    customer.populate({
-      path: 'orders',
-      model: 'Order',
-      populate: {
-        path: 'payment',
-        model: 'Payment'
-      }
-    }, function (err, customer) {
-      if (err) return res.send(err);
-
-      res.json({ message: 'Customer updated!', data: customer });
-    });
-  });
-}).delete(function (req, res) {
-  _Customer2.default.remove({
-    _id: req.params.id
-  }, function (err, customer) {
-    if (err) return res.send(err);
-
-    res.json({ message: 'Successfully deleted!' });
-  });
-});
+router.param('id', _controllers.customerCtrl.load);
 
 exports.default = router;

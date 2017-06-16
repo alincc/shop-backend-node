@@ -33,7 +33,7 @@ router.use('/userinfo', requireAuth);
 
 router.route('/register')
   .post((req, res) => {
-    let user = new User();
+    const user = new User();
     user.username = req.body.username;
     user.password = req.body.password;
     user.email = req.body.email;

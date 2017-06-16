@@ -8,9 +8,7 @@ var _express = require('express');
 
 var _express2 = _interopRequireDefault(_express);
 
-var _Category = require('../models/Category');
-
-var _Category2 = _interopRequireDefault(_Category);
+var _controllers = require('../controllers');
 
 var _idValidator = require('../common/id-validator');
 
@@ -23,50 +21,13 @@ router.use('/:id', function (req, res, next) {
     return res.status(404).send({ data: null, message: 'The category was not found', status: 404 });
   }
 
-  next();
+  return next();
 });
 
-router.route('/').get(function (req, res) {
-  _Category2.default.find(function (err, categories) {
-    if (err) return res.send(err);
+router.route('/').get(_controllers.categoryCtrl.list).post(_controllers.categoryCtrl.create);
 
-    res.json(categories);
-  });
-}).post(function (req, res) {
-  var category = new _Category2.default();
-  category.name = req.body.name;
-  category.image = req.body.image;
+router.route('/:id').get(_controllers.categoryCtrl.get).put(_controllers.categoryCtrl.update).delete(_controllers.categoryCtrl.remove);
 
-  category.save(function (err) {
-    if (err) return res.send(err);
-
-    res.json({ message: 'Category created!' });
-  });
-});
-
-router.route('/:id').get(function (req, res) {
-  _Category2.default.findById(req.params.id).populate('products').exec(function (err, category) {
-    if (err) return res.status(500).send(err);
-    if (!category) return res.status(404).send({ data: null, message: 'The category was not found', status: 404 });
-
-    res.json(category);
-  });
-}).put(function (req, res) {
-  var body = req.body || {};
-
-  _Category2.default.findByIdAndUpdate(req.params.id, body, { new: true }).populate('products').exec(function (err, category) {
-    if (err) return res.send(err);
-
-    return res.json({ message: 'Category updated!', data: category });
-  });
-}).delete(function (req, res) {
-  _Category2.default.remove({
-    _id: req.params.id
-  }, function (err, category) {
-    if (err) return res.send(err);
-
-    res.json({ message: 'Successfully deleted!' });
-  });
-});
+router.param('id', _controllers.categoryCtrl.load);
 
 exports.default = router;

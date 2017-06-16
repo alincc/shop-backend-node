@@ -1,5 +1,5 @@
 import express from 'express';
-import Category from '../models/Category';
+import { categoryCtrl } from '../controllers';
 import { isValid } from '../common/id-validator';
 
 const router = express.Router();
@@ -9,67 +9,21 @@ router.use('/:id', (req, res, next) => {
     return res.status(404).send({ data: null, message: 'The category was not found', status: 404 });
   }
 
-  next();
+  return next();
 });
 
 router.route('/')
-  .get((req, res) => {
-    Category.find((err, categories) => {
-      if (err)
-        return res.send(err);
+  .get(categoryCtrl.list)
 
-      res.json(categories);
-    })
-  })
-
-  .post((req, res) => {
-    var category = new Category();
-    category.name = req.body.name;
-    category.image = req.body.image;
-
-    category.save((err) => {
-      if (err)
-        return res.send(err);
-
-      res.json({ message: 'Category created!' });
-    });
-  });
+  .post(categoryCtrl.create);
 
 router.route('/:id')
-  .get((req, res) => {
-    Category
-      .findById(req.params.id)
-      .populate('products')
-      .exec((err, category) => {
-        if (err) return res.status(500).send(err);
-        if (!category) return res.status(404).send({ data: null, message: 'The category was not found', status: 404 });
+  .get(categoryCtrl.get)
 
-        res.json(category);
-    });
-  })
+  .put(categoryCtrl.update)
 
-  .put((req, res) => {
-    let body = req.body || {}
+  .delete(categoryCtrl.remove);
 
-    Category
-      .findByIdAndUpdate(req.params.id, body, {new: true})
-      .populate('products')
-      .exec((err, category) => {
-        if (err) return res.send(err);
-
-        return res.json({ message: 'Category updated!', data: category });
-    });
-  })
-
-  .delete((req, res) => {
-    Category.remove({
-      _id: req.params.id
-    }, (err, category) => {
-      if (err)
-        return res.send(err);
-
-      res.json({ message: 'Successfully deleted!' });
-    });
-  });
+router.param('id', categoryCtrl.load);
 
 export default router;

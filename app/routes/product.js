@@ -1,16 +1,25 @@
 import express from 'express';
+
 import Product from '../models/Product';
-import Category from '../models/Category';
-import { isValid } from '../common/id-validator';
+import {
+  productCtrl
+} from '../controllers';
+import {
+  isValid
+} from '../common/id-validator';
 
 const router = express.Router();
 
 router.use('/:id', (req, res, next) => {
   if (!isValid(req.params.id)) {
-    return res.status(404).send({ data: null, message: 'The product was not found', status: 404 });
+    return res.status(404).send({
+      data: null,
+      message: 'The product was not found',
+      status: 404
+    });
   }
 
-  next();
+  return next();
 });
 
 router.route('/search')
@@ -19,7 +28,9 @@ router.route('/search')
       return res.json([]);
     }
 
-    Product.find({ name: new RegExp(req.query.query, 'i') }, (err, products) => {
+    Product.find({
+      name: new RegExp(req.query.query, 'i')
+    }, (err, products) => {
       if (err) {
         return res.status(500).send(err);
       }
@@ -30,99 +41,17 @@ router.route('/search')
   });
 
 router.route('/')
-  .get((req, res) => {
-    Product
-      .find()
-      .populate('category')
-      .exec((err, products) => {
-        if (err) return res.status(500).send(err);
-        if (!products) return res.status(404).send({ data: null, message: 'No products found', status: 404 });
+  .get(productCtrl.list)
 
-        res.json(products);
-    });
-  })
-
-  .post((req, res) => {
-
-    let product = new Product();
-    product.name = req.body.name;
-    product.category = req.body.category;
-    product.description = req.body.description;
-    product.image = req.body.image;
-    product.price = req.body.price;
-    product.quantity = req.body.quantity;
-    product.active = req.body.active;
-
-    product.save((err) => {
-      if (err) return res.send(err);
-
-      let categoryId = req.body.category;
-
-      // Get category
-      if (categoryId) {
-        Category.findById(categoryId, (err, category) => {
-          if (err) return res.send(err);
-
-          category.products.push(product);
-
-          category.save((err) => {
-            if (err) return res.send(err);
-
-            return res.json({ message: 'Product created!', data: product });
-          })
-        });
-      }
-      else {
-        return res.json({ message: 'Product created!', data: product });
-      }
-    });
-  });
+  .post(productCtrl.create);
 
 router.route('/:id')
-  .get((req, res) => {
-    Product
-      .findById(req.params.id)
-      .populate('category')
-      .exec((err, product)  => {
-        if (err) return res.status(500).send(err);
-        if (!product) return res.status(404).send({ data: null, message: 'The product was not found', status: 404 });
+  .get(productCtrl.get)
 
-        res.json(product);
-    });
-  })
+  .put(productCtrl.update)
 
-  .put((req, res) => {
-    Product.findById(req.params.id, (err, product) => {
-      if (err)
-        return res.send(err);
+  .delete(productCtrl.remove);
 
-      product.name = req.body.name;
-      product.category = req.body.category;
-      product.description = req.body.description;
-      product.image = req.body.image;
-      product.price = req.body.price;
-      product.quantity = req.body.quantity;
-      product.active = req.body.active;
-
-      product.save((err) => {
-        if (err)
-          return res.send(err);
-
-        res.json({ message: 'Product updated!', data: product });
-      });
-
-    });
-  })
-
-  .delete((req, res) => {
-    Product.remove({
-      _id: req.params.id
-    }, (err, product) => {
-      if (err)
-        return res.send(err);
-
-      res.json({ message: 'Successfully deleted!' });
-    });
-  });
+router.param('id', productCtrl.load);
 
 export default router;

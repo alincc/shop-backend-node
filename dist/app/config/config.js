@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = {
+  env: 'development',
   database: {
     host: 'localhost',
     port: 27017,

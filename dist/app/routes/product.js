@@ -12,9 +12,7 @@ var _Product = require('../models/Product');
 
 var _Product2 = _interopRequireDefault(_Product);
 
-var _Category = require('../models/Category');
-
-var _Category2 = _interopRequireDefault(_Category);
+var _controllers = require('../controllers');
 
 var _idValidator = require('../common/id-validator');
 
@@ -24,10 +22,14 @@ var router = _express2.default.Router();
 
 router.use('/:id', function (req, res, next) {
   if (!(0, _idValidator.isValid)(req.params.id)) {
-    return res.status(404).send({ data: null, message: 'The product was not found', status: 404 });
+    return res.status(404).send({
+      data: null,
+      message: 'The product was not found',
+      status: 404
+    });
   }
 
-  next();
+  return next();
 });
 
 router.route('/search').get(function (req, res) {
@@ -35,7 +37,9 @@ router.route('/search').get(function (req, res) {
     return res.json([]);
   }
 
-  _Product2.default.find({ name: new RegExp(req.query.query, 'i') }, function (err, products) {
+  _Product2.default.find({
+    name: new RegExp(req.query.query, 'i')
+  }, function (err, products) {
     if (err) {
       return res.status(500).send(err);
     }
@@ -44,81 +48,10 @@ router.route('/search').get(function (req, res) {
   });
 });
 
-router.route('/').get(function (req, res) {
-  _Product2.default.find().populate('category').exec(function (err, products) {
-    if (err) return res.status(500).send(err);
-    if (!products) return res.status(404).send({ data: null, message: 'No products found', status: 404 });
+router.route('/').get(_controllers.productCtrl.list).post(_controllers.productCtrl.create);
 
-    res.json(products);
-  });
-}).post(function (req, res) {
+router.route('/:id').get(_controllers.productCtrl.get).put(_controllers.productCtrl.update).delete(_controllers.productCtrl.remove);
 
-  var product = new _Product2.default();
-  product.name = req.body.name;
-  product.category = req.body.category;
-  product.description = req.body.description;
-  product.image = req.body.image;
-  product.price = req.body.price;
-  product.quantity = req.body.quantity;
-  product.active = req.body.active;
-
-  product.save(function (err) {
-    if (err) return res.send(err);
-
-    var categoryId = req.body.category;
-
-    // Get category
-    if (categoryId) {
-      _Category2.default.findById(categoryId, function (err, category) {
-        if (err) return res.send(err);
-
-        category.products.push(product);
-
-        category.save(function (err) {
-          if (err) return res.send(err);
-
-          return res.json({ message: 'Product created!', data: product });
-        });
-      });
-    } else {
-      return res.json({ message: 'Product created!', data: product });
-    }
-  });
-});
-
-router.route('/:id').get(function (req, res) {
-  _Product2.default.findById(req.params.id).populate('category').exec(function (err, product) {
-    if (err) return res.status(500).send(err);
-    if (!product) return res.status(404).send({ data: null, message: 'The product was not found', status: 404 });
-
-    res.json(product);
-  });
-}).put(function (req, res) {
-  _Product2.default.findById(req.params.id, function (err, product) {
-    if (err) return res.send(err);
-
-    product.name = req.body.name;
-    product.category = req.body.category;
-    product.description = req.body.description;
-    product.image = req.body.image;
-    product.price = req.body.price;
-    product.quantity = req.body.quantity;
-    product.active = req.body.active;
-
-    product.save(function (err) {
-      if (err) return res.send(err);
-
-      res.json({ message: 'Product updated!', data: product });
-    });
-  });
-}).delete(function (req, res) {
-  _Product2.default.remove({
-    _id: req.params.id
-  }, function (err, product) {
-    if (err) return res.send(err);
-
-    res.json({ message: 'Successfully deleted!' });
-  });
-});
+router.param('id', _controllers.productCtrl.load);
 
 exports.default = router;
