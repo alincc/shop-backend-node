@@ -36,7 +36,8 @@ var OrderSchema = new Schema({
   },
   items: [{
     product: { type: Schema.Types.ObjectId, ref: 'Product' },
-    quantity: Number
+    quantity: Number,
+    price: Number
   }],
   payment: { type: Schema.Types.ObjectId, ref: 'Payment' },
   statusLog: [{
@@ -44,27 +45,28 @@ var OrderSchema = new Schema({
     createdAt: { type: Date, default: Date.now }
   }],
   shippingAddress: {
-    email: String,
-    phone: String,
-    city: String,
-    firstname: String,
-    lastname: String,
-    postnumber: { type: String, required: true },
-    address: { type: String, required: true },
-    country: { type: String, required: true }
+    email: { type: String, default: '' },
+    phone: { type: String, default: '' },
+    city: { type: String, default: '' },
+    firstname: { type: String, default: '' },
+    lastname: { type: String, default: '' },
+    postnumber: { type: String, default: '' },
+    address: { type: String, default: '' },
+    country: { type: String, default: '' }
   }
 }, {
   timestamps: true
 });
 
 OrderSchema.pre('findOneAndUpdate', function (next) {
-  // console.log(this);
+  // eslint-disable-line
+  // console.log(this.getUpdate());
   next();
 });
 
 OrderSchema.pre('save', function (next) {
   // eslint-disable-line
-  // console.log('2', this);
+  // console.log("this", this);
   next();
 });
 

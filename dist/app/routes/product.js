@@ -8,10 +8,6 @@ var _express = require('express');
 
 var _express2 = _interopRequireDefault(_express);
 
-var _Product = require('../models/Product');
-
-var _Product2 = _interopRequireDefault(_Product);
-
 var _controllers = require('../controllers');
 
 var _idValidator = require('../common/id-validator');
@@ -30,22 +26,6 @@ router.use('/:id', function (req, res, next) {
   }
 
   return next();
-});
-
-router.route('/search').get(function (req, res) {
-  if (!req.param('query')) {
-    return res.json([]);
-  }
-
-  _Product2.default.find({
-    name: new RegExp(req.query.query, 'i')
-  }, function (err, products) {
-    if (err) {
-      return res.status(500).send(err);
-    }
-
-    return res.json(products);
-  });
 });
 
 router.route('/').get(_controllers.productCtrl.list).post(_controllers.productCtrl.create);

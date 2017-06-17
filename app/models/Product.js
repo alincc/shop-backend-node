@@ -7,12 +7,21 @@ import APIError from '../helpers/APIError';
 const Schema = mongoose.Schema;
 
 const ProductSchema = new Schema({
-  category: { type: Schema.Types.ObjectId, ref: 'Category' },
+  category: {
+    type: Schema.Types.ObjectId,
+    ref: 'Category'
+  },
   name: String,
   description: String,
   image: String,
-  quantity: { type: Number, default: 0 },
-  active: { type: Boolean, default: true },
+  quantity: {
+    type: Number,
+    default: 0
+  },
+  active: {
+    type: Boolean,
+    default: true
+  },
   price: Number,
 });
 
@@ -30,10 +39,16 @@ ProductSchema.statics = {
       });
   },
 
-  list() {
-    return this.find()
-      .populate('category')
-      .exec();
+  list({ skip = 0, limit = 50, query = '' } = {}) {
+    return this.find({
+      name: new RegExp(query, 'i')
+    })
+    .sort({
+      createdAt: -1
+    })
+    .skip(+skip)
+    .limit(+limit)
+    .exec();
   }
 };
 

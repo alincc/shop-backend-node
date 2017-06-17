@@ -25,12 +25,21 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var Schema = _mongoose2.default.Schema;
 
 var ProductSchema = new Schema({
-  category: { type: Schema.Types.ObjectId, ref: 'Category' },
+  category: {
+    type: Schema.Types.ObjectId,
+    ref: 'Category'
+  },
   name: String,
   description: String,
   image: String,
-  quantity: { type: Number, default: 0 },
-  active: { type: Boolean, default: true },
+  quantity: {
+    type: Number,
+    default: 0
+  },
+  active: {
+    type: Boolean,
+    default: true
+  },
   price: Number
 });
 
@@ -45,7 +54,19 @@ ProductSchema.statics = {
     });
   },
   list: function list() {
-    return this.find().populate('category').exec();
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$skip = _ref.skip,
+        skip = _ref$skip === undefined ? 0 : _ref$skip,
+        _ref$limit = _ref.limit,
+        limit = _ref$limit === undefined ? 50 : _ref$limit,
+        _ref$query = _ref.query,
+        query = _ref$query === undefined ? '' : _ref$query;
+
+    return this.find({
+      name: new RegExp(query, 'i')
+    }).sort({
+      createdAt: -1
+    }).skip(+skip).limit(+limit).exec();
   }
 };
 

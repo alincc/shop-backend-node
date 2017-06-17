@@ -11,7 +11,6 @@ const load = (req, res, next, id) => {
 };
 
 const create = (req, res, next) => {
-
   const product = new Product({
     name: req.body.name,
     category: req.body.category,
@@ -41,7 +40,9 @@ const create = (req, res, next) => {
 };
 
 const list = (req, res, next) => {
-  Product.list()
+  const { limit = 50, skip = 0, query = '' } = req.query;
+
+  Product.list({ limit, skip, query })
     .then(product => res.json(product))
     .catch(e => next(e));
 };

@@ -1,6 +1,5 @@
 import express from 'express';
 
-import Product from '../models/Product';
 import {
   productCtrl
 } from '../controllers';
@@ -21,24 +20,6 @@ router.use('/:id', (req, res, next) => {
 
   return next();
 });
-
-router.route('/search')
-  .get((req, res) => {
-    if (!req.param('query')) {
-      return res.json([]);
-    }
-
-    Product.find({
-      name: new RegExp(req.query.query, 'i')
-    }, (err, products) => {
-      if (err) {
-        return res.status(500).send(err);
-      }
-
-      return res.json(products);
-    });
-
-  });
 
 router.route('/')
   .get(productCtrl.list)

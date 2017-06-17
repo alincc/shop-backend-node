@@ -24,7 +24,6 @@ var load = function load(req, res, next, id) {
 };
 
 var create = function create(req, res, next) {
-
   var product = new _Product2.default({
     name: req.body.name,
     category: req.body.category,
@@ -54,7 +53,16 @@ var create = function create(req, res, next) {
 };
 
 var list = function list(req, res, next) {
-  _Product2.default.list().then(function (product) {
+  var _req$query = req.query,
+      _req$query$limit = _req$query.limit,
+      limit = _req$query$limit === undefined ? 50 : _req$query$limit,
+      _req$query$skip = _req$query.skip,
+      skip = _req$query$skip === undefined ? 0 : _req$query$skip,
+      _req$query$query = _req$query.query,
+      query = _req$query$query === undefined ? '' : _req$query$query;
+
+
+  _Product2.default.list({ limit: limit, skip: skip, query: query }).then(function (product) {
     return res.json(product);
   }).catch(function (e) {
     return next(e);
