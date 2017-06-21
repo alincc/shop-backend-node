@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import Promise from 'bluebird';
 
 import APIError from '../helpers/APIError';
+import Product from '../models/Product';
 
 const Schema = mongoose.Schema;
 
@@ -20,6 +21,15 @@ const OrderSchema = new Schema({
     product: { type: Schema.Types.ObjectId, ref: 'Product' },
     quantity: Number,
     price: Number,
+    combination: [{
+      attribute: {
+        name: String,
+      },
+      value: {
+        label: String,
+        value: String,
+      },
+    }],
   }],
   payment: { type: Schema.Types.ObjectId, ref: 'Payment' },
   statusLog: [{
@@ -38,16 +48,6 @@ const OrderSchema = new Schema({
   },
 }, {
   timestamps: true,
-});
-
-OrderSchema.pre('findOneAndUpdate', function (next) { // eslint-disable-line
-  // console.log(this.getUpdate());
-  next();
-});
-
-OrderSchema.pre('save', function(next) { // eslint-disable-line
-  // console.log("this", this);
-  next();
 });
 
 OrderSchema.methods = {
@@ -75,7 +75,26 @@ OrderSchema.statics = {
   list() {
     return this.find()
       .exec();
-  }
+  },
+
+  updateProductQuantity(items) {
+    const promises = items.map(item => (
+      Product.findById(item.product)
+        .then((p) => {
+          const product = p;
+          if ((product.quantity - item.quantity) < 0) {
+            throw new APIError('Not sufficient quantity for product', httpStatus.EXPECTATION_FAILED, true);
+          }
+
+          product.quantity -= item.quantity;
+
+          return product.save();
+        })
+        .catch(e => Promise.reject(e))
+    ));
+
+    return Promise.all(promises);
+  },
 };
 
 export default mongoose.model('Order', OrderSchema);

@@ -60,7 +60,8 @@ var OrderSchema = new Schema({
 
 OrderSchema.pre('findOneAndUpdate', function (next) {
   // eslint-disable-line
-  // console.log(this.getUpdate());
+  console.log('testx');
+  console.log(this.getUpdate());
   next();
 });
 

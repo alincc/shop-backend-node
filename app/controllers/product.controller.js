@@ -19,6 +19,7 @@ const create = (req, res, next) => {
     price: req.body.price,
     quantity: req.body.quantity,
     active: req.body.active,
+    onSale: req.body.onSale,
   });
 
   product.save()

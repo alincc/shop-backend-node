@@ -23,13 +23,48 @@ const ProductSchema = new Schema({
     default: true
   },
   price: Number,
+  onSale: { type: Boolean, default: false },
+  discount: {
+    value: {
+      type: Number,
+      default: 0,
+    },
+    startDate: {
+      type: Date,
+      default: null,
+    },
+    endDate: {
+      type: Date,
+      default: null,
+    },
+    active: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  selectedCombination: [{
+    attribute: { type: Schema.ObjectId, ref: 'Attribute' },
+    value: {
+      label: String,
+      value: String,
+    },
+  }],
+  combinations: [{
+    quantity: { type: Number, default: 0 },
+    attributes: [{
+      attribute: { type: Schema.ObjectId, ref: 'Attribute' },
+      value: {
+        label: String,
+        value: String,
+      },
+    }],
+  }],
 });
 
 ProductSchema.statics = {
   get(id) {
     return this.findById(id)
-      .populate('category')
-      .exec()
+      .populate('category combinations.attributes.attribute')
       .then((product) => {
         if (product) {
           return product;
@@ -49,7 +84,8 @@ ProductSchema.statics = {
     .skip(+skip)
     .limit(+limit)
     .exec();
-  }
+  },
+
 };
 
 export default mongoose.model('Product', ProductSchema);

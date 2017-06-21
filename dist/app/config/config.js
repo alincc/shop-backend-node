@@ -9,7 +9,8 @@ exports.default = {
     host: 'localhost',
     port: 27017,
     db: 'shop',
-    url: 'mongodb://localhost:27017/shop'
+    // url: 'mongodb://database:27017/shop',      # for docker compose
+    url: 'mongodb://127.0.0.1:27017/shop'
   },
   key: {
     privateKey: '37LvDSm4XvjYOh9Y',

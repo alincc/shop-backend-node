@@ -1,39 +1,37 @@
-import Category from '../models/Category';
+import Attribute from '../models/Attribute';
 
 const load = (req, res, next, id) => {
-  Category.get(id)
-    .then((category) => {
-      req.category = category;
+  Attribute.get(id)
+    .then((attribute) => {
+      req.attribute = attribute;
       return next();
     })
     .catch(e => next(e));
 };
 
 const create = (req, res, next) => {
-  const category = new Category({
+  const attribute = new Attribute({
     name: req.body.name,
-    image: req.body.image,
-    description: req.body.description,
-    active: req.body.active,
+    values: req.body.values,
   });
 
-  category.save()
-    .then(category => res.json({ message: 'Category created!', data: category }))
+  attribute.save()
+    .then(attribute => res.json({ message: 'Attribute created!', data: attribute }))
     .catch(e => next(e));
 };
 
 const list = (req, res, next) => {
-  Category.list()
-    .then(category => res.json(category))
+  Attribute.list()
+    .then(attribute => res.json(attribute))
     .catch(e => next(e));
 };
 
-const get = (req, res) => res.json(req.category);
+const get = (req, res) => res.json(req.attribute);
 
 const remove = (req, res, next) => {
-  const category = req.category;
+  const attribute = req.attribute;
 
-  category.remove()
+  attribute.remove()
     .then(() => res.json({ message: 'Successfully deleted!' }))
     .catch(e => next(e));
 };
@@ -41,10 +39,10 @@ const remove = (req, res, next) => {
 const update = (req, res, next) => {
   const body = req.body || {};
 
-  Category
+  Attribute
     .findByIdAndUpdate(req.params.id, body, { new: true })
     .exec()
-    .then(category => res.json({ message: 'Category updated!', data: category }))
+    .then(attribute => res.json({ message: 'Attribute updated!', data: attribute }))
     .catch(e => next(e));
 };
 

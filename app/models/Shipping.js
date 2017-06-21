@@ -13,6 +13,7 @@ const ShippingSchema = new Schema({
   },
   price: { type: Number, required: true },
   description: String,
+  active: { type: Boolean, default: true },
 });
 
 ShippingSchema.statics = {
