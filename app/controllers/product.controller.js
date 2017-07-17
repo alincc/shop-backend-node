@@ -51,9 +51,13 @@ const list = (req, res, next) => {
 const get = (req, res) => res.json(req.product);
 
 const remove = (req, res, next) => {
+  const { soft = 'true' } = req.query;
+
   const product = req.product;
 
-  product.delete()
+  // Delete action either soft delete or hard
+  return Promise.resolve()
+    .then(soft === 'true' ? product.delete() : product.remove())
     .then(() => res.json({ message: 'Successfully deleted!', data: product }))
     .catch(e => next(e));
 };
