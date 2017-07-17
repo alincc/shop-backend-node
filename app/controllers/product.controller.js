@@ -53,8 +53,16 @@ const get = (req, res) => res.json(req.product);
 const remove = (req, res, next) => {
   const product = req.product;
 
-  product.remove()
-    .then(() => res.json({ message: 'Successfully deleted!' }))
+  product.delete()
+    .then(() => res.json({ message: 'Successfully deleted!', data: product }))
+    .catch(e => next(e));
+};
+
+const restore = (req, res, next) => {
+  const product = req.product;
+
+  product.restore()
+    .then(() => res.json({ message: 'Successfully restored!', data: product }))
     .catch(e => next(e));
 };
 
@@ -76,4 +84,5 @@ export default {
   load,
   remove,
   update,
+  restore,
 };

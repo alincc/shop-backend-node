@@ -30,6 +30,11 @@ const OrderSchema = new Schema({
         value: String,
       },
     }],
+    selectedCombination: {
+      attributes: [],
+      quantity: Number,
+      _id: String,
+    },
   }],
   payment: { type: Schema.Types.ObjectId, ref: 'Payment' },
   statusLog: [{
@@ -72,8 +77,14 @@ OrderSchema.statics = {
       });
   },
 
-  list() {
+  list({ skip = 0, limit = 9999, sort = 'asc' } = {}) {
     return this.find()
+      .populate('customer')
+      .sort({
+        createdAt: sort
+      })
+      .skip(+skip)
+      .limit(+limit)
       .exec();
   },
 
@@ -82,15 +93,31 @@ OrderSchema.statics = {
       Product.findById(item.product)
         .then((p) => {
           const product = p;
-          if ((product.quantity - item.quantity) < 0) {
-            throw new APIError('Not sufficient quantity for product', httpStatus.EXPECTATION_FAILED, true);
+
+          if (p.combinations.length === 0) {
+            if ((product.quantity - item.quantity) < 0) {
+              throw new APIError('Not sufficient quantity for product', httpStatus.EXPECTATION_FAILED, true);
+            }
+
+            product.quantity -= item.quantity;
+
+            return product.save();
           }
 
-          product.quantity -= item.quantity;
+          if (item.selectedCombination) {
+            product.combinations = product.combinations.map((combination) => {
+              if (combination._id == item.selectedCombination._id) { // eslint-disable-line eqeqeq
+                combination.quantity -= item.quantity; // eslint-disable-line no-param-reassign
+              }
+              return combination;
+            });
+          }
 
           return product.save();
         })
-        .catch(e => Promise.reject(e))
+        .catch(e => {
+          return Promise.reject(e);
+        })
     ));
 
     return Promise.all(promises);

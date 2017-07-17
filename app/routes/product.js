@@ -26,6 +26,9 @@ router.route('/')
 
   .post(productCtrl.create);
 
+router.route('/:id/restore')
+  .get(productCtrl.restore);
+
 router.route('/:id')
   .get(productCtrl.get)
 

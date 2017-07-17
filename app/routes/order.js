@@ -17,12 +17,16 @@ router.route('/')
 
   .post(orderCtrl.create);
 
+router.route('/:id/add-product')
+  .put(orderCtrl.addProduct);
+
 router.route('/:id')
   .get(orderCtrl.get)
 
   .put(orderCtrl.update)
 
   .delete(orderCtrl.remove);
+
 
 router.param('id', orderCtrl.load);
 

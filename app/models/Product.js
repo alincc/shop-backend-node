@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import httpStatus from 'http-status';
 import Promise from 'bluebird';
+import mongooseDelete from 'mongoose-delete';
 
 import APIError from '../helpers/APIError';
 
@@ -61,6 +62,8 @@ const ProductSchema = new Schema({
   }],
 });
 
+ProductSchema.plugin(mongooseDelete);
+
 ProductSchema.statics = {
   get(id) {
     return this.findById(id)
@@ -78,6 +81,7 @@ ProductSchema.statics = {
     return this.find({
       name: new RegExp(query, 'i')
     })
+    .populate('category combinations.attributes.attribute')
     .sort({
       createdAt: -1
     })

@@ -34,7 +34,7 @@ const create = (req, res, next) => {
 
       customer.save().then(customer => [order, customer]);
 
-      return order.items;
+      return req.body.items;
     })
     .then(Order.updateProductQuantity)
     .then(() => res.json({ message: 'Order created!', data: order }))
@@ -42,7 +42,9 @@ const create = (req, res, next) => {
 };
 
 const list = (req, res, next) => {
-  Order.list()
+  const { limit = 50, skip = 0, sort = 'asc' } = req.query;
+
+  Order.list({ limit, skip, sort })
     .then(order => res.json(order))
     .catch(e => next(e));
 };
@@ -54,6 +56,23 @@ const remove = (req, res, next) => {
 
   order.remove()
     .then(() => res.json({ message: 'Successfully deleted!' }))
+    .catch(e => next(e));
+};
+
+const addProduct = (req, res, next) => {
+  const order = req.order;
+  const body = req.body || {};
+
+  if (body.product) {
+    order.items.push(body);
+  }
+
+  order
+    .save()
+    .then(() => [req.body])
+    .then(Order.updateProductQuantity)
+    .then(() => Order.findById(order._id).populate('customer items.product shipping.value payment').exec())
+    .then(savedOrder => res.json({ message: 'Order updated!', data: savedOrder }))
     .catch(e => next(e));
 };
 
@@ -109,4 +128,5 @@ export default {
   load,
   remove,
   update,
+  addProduct,
 };
