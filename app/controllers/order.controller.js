@@ -76,6 +76,18 @@ const addProduct = (req, res, next) => {
     .catch(e => next(e));
 };
 
+const addMessage = (req, res, next) => {
+  const order = req.order;
+  const body = req.body || {};
+
+  order.messages.push(body);
+
+  order
+    .save()
+    .then(savedOrder => res.json({ message: 'Order updated!', data: savedOrder }))
+    .catch(e => next(e));
+};
+
 const update = (req, res, next) => {
   const order = req.order;
   const body = req.body || {};
@@ -129,4 +141,5 @@ export default {
   remove,
   update,
   addProduct,
+  addMessage,
 };

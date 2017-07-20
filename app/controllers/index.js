@@ -6,3 +6,4 @@ export { default as paymentCtrl } from './payment.controller.js';
 export { default as userCtrl } from './user.controller.js';
 export { default as productCtrl } from './product.controller.js';
 export { default as attributeCtrl } from './attribute.controller.js';
+export { default as messageCtrl } from './message.controller.js';

@@ -51,6 +51,7 @@ const OrderSchema = new Schema({
     address: { type: String, default: '' },
     country: { type: String, default: '' },
   },
+  messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }],
 }, {
   timestamps: true,
 });
@@ -67,6 +68,14 @@ OrderSchema.statics = {
   get(id) {
     return this.findById(id)
       .populate('customer items.product shipping.value payment')
+      .populate({
+        path: 'messages',
+        model: 'Message',
+        populate: {
+          path: 'user',
+          model: 'User',
+        },
+      })
       .exec()
       .then((order) => {
         if (order) {
@@ -115,9 +124,7 @@ OrderSchema.statics = {
 
           return product.save();
         })
-        .catch(e => {
-          return Promise.reject(e);
-        })
+        .catch(e => Promise.reject(e))
     ));
 
     return Promise.all(promises);

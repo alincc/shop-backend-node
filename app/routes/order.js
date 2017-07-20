@@ -17,6 +17,9 @@ router.route('/')
 
   .post(orderCtrl.create);
 
+router.route('/:id/add-message')
+  .put(orderCtrl.addMessage);
+
 router.route('/:id/add-product')
   .put(orderCtrl.addProduct);
 

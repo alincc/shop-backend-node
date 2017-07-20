@@ -8,6 +8,7 @@ import shippingRoutes from './shipping';
 import authRoutes from './auth';
 import paymentRoutes from './payment';
 import attributeRoutes from './attribute';
+import messageRoutes from './message';
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use('/shipping', shippingRoutes);
 router.use('/auth', authRoutes);
 router.use('/payment', paymentRoutes);
 router.use('/attribute', attributeRoutes);
+router.use('/message', messageRoutes);
 
 export default router;
