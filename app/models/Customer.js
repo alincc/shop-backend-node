@@ -44,6 +44,14 @@ CustomerSchema.statics = {
 
   list() {
     return this.find()
+      .populate({
+        path: 'orders',
+        model: 'Order',
+        populate: {
+          path: 'payment',
+          model: 'Payment',
+        },
+      })
       .exec();
   }
 };

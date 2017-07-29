@@ -14,7 +14,15 @@ const ProductSchema = new Schema({
   },
   name: String,
   description: String,
-  image: String,
+  images: [{
+    url: String,
+    label: String,
+    main: Boolean,
+    createdAt: {
+      type: Date,
+      default: Date.now(),
+    },
+  }],
   quantity: {
     type: Number,
     default: 0

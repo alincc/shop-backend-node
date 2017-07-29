@@ -88,7 +88,15 @@ OrderSchema.statics = {
 
   list({ skip = 0, limit = 9999, sort = 'asc' } = {}) {
     return this.find()
-      .populate('customer')
+      .populate('customer items.product shipping.value payment')
+      .populate({
+        path: 'messages',
+        model: 'Message',
+        populate: {
+          path: 'user',
+          model: 'User',
+        },
+      })
       .sort({
         createdAt: sort
       })

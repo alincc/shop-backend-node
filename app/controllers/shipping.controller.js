@@ -47,11 +47,21 @@ const update = (req, res, next) => {
     .catch(e => next(e));
 };
 
+const removeMany = (req, res, next) => {
+  const ids = req.body.ids || [];
+
+  Shipping
+    .remove({ _id: { $in: ids } })
+    .then(() => res.json({ message: 'Carriers deleted', data: { ids } }))
+    .catch(e => next(e));
+};
+
 export default {
   create,
   list,
   get,
   load,
   remove,
+  removeMany,
   update,
 };

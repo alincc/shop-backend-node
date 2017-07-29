@@ -4,6 +4,15 @@ import { isValid } from '../common/id-validator';
 
 const router = express.Router();
 
+router.route('/')
+  .get(categoryCtrl.list)
+
+  .post(categoryCtrl.create);
+
+router.route('/delete-many')
+  .post(categoryCtrl.removeMany);
+
+
 router.use('/:id', (req, res, next) => {
   if (!isValid(req.params.id)) {
     return res.status(404).send({ data: null, message: 'The category was not found', status: 404 });
@@ -11,11 +20,6 @@ router.use('/:id', (req, res, next) => {
 
   return next();
 });
-
-router.route('/')
-  .get(categoryCtrl.list)
-
-  .post(categoryCtrl.create);
 
 router.route('/:id')
   .get(categoryCtrl.get)
