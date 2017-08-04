@@ -51,7 +51,11 @@ const OrderSchema = new Schema({
     address: { type: String, default: '' },
     country: { type: String, default: '' },
   },
-  messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }],
+  messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }], // TODO: deprecate
+  thread: {
+    type: Schema.Types.ObjectId,
+    ref: 'Thread',
+  },
 }, {
   timestamps: true,
 });
@@ -69,6 +73,18 @@ OrderSchema.statics = {
     return this.findById(id)
       .populate('customer items.product shipping.value payment')
       .populate({
+        path: 'thread',
+        model: 'Thread',
+        populate: {
+          path: 'messages',
+          model: 'Message',
+          populate: {
+            path: 'user',
+            model: 'User',
+          },
+        },
+      })
+      .populate({ // TODO: deprecate
         path: 'messages',
         model: 'Message',
         populate: {
@@ -90,6 +106,18 @@ OrderSchema.statics = {
     return this.find()
       .populate('customer items.product shipping.value payment')
       .populate({
+        path: 'thread',
+        model: 'Thread',
+        populate: {
+          path: 'messages',
+          model: 'Message',
+          populate: {
+            path: 'user',
+            model: 'User',
+          },
+        },
+      })
+      .populate({ // TODO: deprecate
         path: 'messages',
         model: 'Message',
         populate: {

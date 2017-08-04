@@ -1,6 +1,7 @@
 import Order from '../models/Order';
 import Customer from '../models/Customer';
 import Product from '../models/Product';
+import Thread from '../models/Thread';
 
 const load = (req, res, next, id) => {
   Order.get(id)
@@ -76,16 +77,61 @@ const addProduct = (req, res, next) => {
     .catch(e => next(e));
 };
 
+const addThread = (req, res, next) => {
+  const order = req.order;
+
+  const thread = new Thread({
+    messages: [],
+    status: 0,
+    order: req.order._id,
+    customer: {
+      email: req.order.shippingAddress.email,
+      name: `${req.order.shippingAddress.firstname} ${req.order.shippingAddress.lastname}`,
+    },
+  });
+
+  thread
+    .save()
+    .then((thread) => {
+      order.thread = thread;
+
+      return order.save();
+    })
+    .then(savedOrder => res.json({ message: 'Order updated!', data: savedOrder }))
+    .catch(e => next(e));
+};
+
 const addMessage = (req, res, next) => {
   const order = req.order;
   const body = req.body || {};
 
-  order.messages.push(body);
+  if (order.thread) {
+    const thread = order.thread;
 
-  order
-    .save()
-    .then(savedOrder => res.json({ message: 'Order updated!', data: savedOrder }))
-    .catch(e => next(e));
+    thread.messages.push(body);
+
+    thread
+      .save()
+      .then(() => Order.get(order._id))
+      .then(savedOrder => res.json({ message: 'Order updated!', data: savedOrder }))
+      .catch(e => next(e));
+  } else {
+    const thread = new Thread({
+      messages: [body],
+      order: req.order._id,
+    });
+
+    thread
+      .save()
+      .then((thread) => {
+        order.thread = thread;
+
+        return order.save();
+      })
+      .then(() => Order.get(order._id))
+      .then(savedOrder => res.json({ message: 'Order updated!', data: savedOrder }))
+      .catch(e => next(e));
+  }
 };
 
 const update = (req, res, next) => {
@@ -141,5 +187,6 @@ export default {
   remove,
   update,
   addProduct,
+  addThread,
   addMessage,
 };

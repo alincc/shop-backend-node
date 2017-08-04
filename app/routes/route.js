@@ -9,6 +9,9 @@ import authRoutes from './auth';
 import paymentRoutes from './payment';
 import attributeRoutes from './attribute';
 import messageRoutes from './message';
+import threadRoutes from './thread';
+import settingsRoutes from './settings';
+import imageUploadRoutes from './image-upload';
 
 const router = express.Router();
 
@@ -22,5 +25,8 @@ router.use('/auth', authRoutes);
 router.use('/payment', paymentRoutes);
 router.use('/attribute', attributeRoutes);
 router.use('/message', messageRoutes);
+router.use('/thread', threadRoutes);
+router.use('/settings', settingsRoutes);
+router.use('/image-upload', imageUploadRoutes);
 
 export default router;

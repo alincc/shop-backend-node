@@ -7,3 +7,5 @@ export { default as userCtrl } from './user.controller.js';
 export { default as productCtrl } from './product.controller.js';
 export { default as attributeCtrl } from './attribute.controller.js';
 export { default as messageCtrl } from './message.controller.js';
+export { default as threadCtrl } from './thread.controller.js';
+export { default as settingsCtrl } from './settings.controller.js';

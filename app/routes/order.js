@@ -23,6 +23,9 @@ router.route('/:id/add-message')
 router.route('/:id/add-product')
   .put(orderCtrl.addProduct);
 
+router.route('/:id/add-thread')
+  .put(orderCtrl.addThread);
+
 router.route('/:id')
   .get(orderCtrl.get)
 
