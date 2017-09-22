@@ -4,12 +4,14 @@ import Promise from 'bluebird';
 
 import APIError from '../helpers/APIError';
 import Product from '../models/Product';
+import Variant from '../models/Variant';
 
 const Schema = mongoose.Schema;
 
 const OrderSchema = new Schema({
   total: Number,
-  customer: { type: Schema.Types.ObjectId, ref: 'Customer' },
+  customer: { type: Schema.Types.ObjectId, ref: 'Customer' }, // TODO: remove property
+  user: { type: Schema.Types.ObjectId, ref: 'User' },
   status: Number,
   shipping: {
     value: { type: Schema.Types.ObjectId, ref: 'Shipping' },
@@ -18,22 +20,11 @@ const OrderSchema = new Schema({
     weight: Number,
   },
   items: [{
-    product: { type: Schema.Types.ObjectId, ref: 'Product' },
     quantity: Number,
     price: Number,
-    combination: [{
-      attribute: {
-        name: String,
-      },
-      value: {
-        label: String,
-        value: String,
-      },
-    }],
-    selectedCombination: {
-      attributes: [],
-      quantity: Number,
-      _id: String,
+    variant: {
+      type: Schema.ObjectId,
+      ref: 'Variant',
     },
   }],
   payment: { type: Schema.Types.ObjectId, ref: 'Payment' },
@@ -51,7 +42,6 @@ const OrderSchema = new Schema({
     address: { type: String, default: '' },
     country: { type: String, default: '' },
   },
-  messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }], // TODO: deprecate
   thread: {
     type: Schema.Types.ObjectId,
     ref: 'Thread',
@@ -84,14 +74,6 @@ OrderSchema.statics = {
           },
         },
       })
-      .populate({ // TODO: deprecate
-        path: 'messages',
-        model: 'Message',
-        populate: {
-          path: 'user',
-          model: 'User',
-        },
-      })
       .exec()
       .then((order) => {
         if (order) {
@@ -104,7 +86,7 @@ OrderSchema.statics = {
 
   list({ skip = 0, limit = 9999, sort = 'asc' } = {}) {
     return this.find()
-      .populate('customer items.product shipping.value payment')
+      .populate('customer items.variant shipping.value payment')
       .populate({
         path: 'thread',
         model: 'Thread',
@@ -117,14 +99,6 @@ OrderSchema.statics = {
           },
         },
       })
-      .populate({ // TODO: deprecate
-        path: 'messages',
-        model: 'Message',
-        populate: {
-          path: 'user',
-          model: 'User',
-        },
-      })
       .sort({
         createdAt: sort
       })
@@ -135,30 +109,17 @@ OrderSchema.statics = {
 
   updateProductQuantity(items) {
     const promises = items.map(item => (
-      Product.findById(item.product)
-        .then((p) => {
-          const product = p;
+      Variant.findById(item.variant)
+        .then((v) => {
+          const variant = v;
 
-          if (p.combinations.length === 0) {
-            if ((product.quantity - item.quantity) < 0) {
-              throw new APIError('Not sufficient quantity for product', httpStatus.EXPECTATION_FAILED, true);
-            }
-
-            product.quantity -= item.quantity;
-
-            return product.save();
+          if ((variant.stock - item.quantity) < 0) {
+            throw new APIError('Not sufficient quantity for product', httpStatus.EXPECTATION_FAILED, true);
           }
 
-          if (item.selectedCombination) {
-            product.combinations = product.combinations.map((combination) => {
-              if (combination._id == item.selectedCombination._id) { // eslint-disable-line eqeqeq
-                combination.quantity -= item.quantity; // eslint-disable-line no-param-reassign
-              }
-              return combination;
-            });
-          }
+          variant.stock -= item.quantity;
 
-          return product.save();
+          return variant.save();
         })
         .catch(e => Promise.reject(e))
     ));

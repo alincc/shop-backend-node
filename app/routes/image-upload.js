@@ -32,8 +32,6 @@ router.route('/')
       path: `${STATIC_URL}${req.file.filename}`,
     };
 
-    console.log(req.file);
-
     res.status(200).send({ message: 'Upload complete', data });
   });
 

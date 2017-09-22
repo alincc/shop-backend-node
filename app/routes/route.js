@@ -11,6 +11,9 @@ import attributeRoutes from './attribute';
 import messageRoutes from './message';
 import threadRoutes from './thread';
 import settingsRoutes from './settings';
+import variantRoutes from './variant';
+import optionTypeRoutes from './option-type';
+import optionValueRoutes from './option-value';
 import imageUploadRoutes from './image-upload';
 
 const router = express.Router();
@@ -27,6 +30,9 @@ router.use('/attribute', attributeRoutes);
 router.use('/message', messageRoutes);
 router.use('/thread', threadRoutes);
 router.use('/settings', settingsRoutes);
+router.use('/variant', variantRoutes);
+router.use('/option-type', optionTypeRoutes);
+router.use('/option-value', optionValueRoutes);
 router.use('/image-upload', imageUploadRoutes);
 
 export default router;

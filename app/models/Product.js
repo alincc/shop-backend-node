@@ -51,22 +51,13 @@ const ProductSchema = new Schema({
       default: false,
     },
   },
-  selectedCombination: [{
-    attribute: { type: Schema.ObjectId, ref: 'Attribute' },
-    value: {
-      label: String,
-      value: String,
-    },
+  variants: [{
+    type: Schema.ObjectId,
+    ref: 'Variant',
   }],
-  combinations: [{
-    quantity: { type: Number, default: 0 },
-    attributes: [{
-      attribute: { type: Schema.ObjectId, ref: 'Attribute' },
-      value: {
-        label: String,
-        value: String,
-      },
-    }],
+  optionTypes: [{
+    type: Schema.ObjectId,
+    ref: 'OptionType',
   }],
 });
 
@@ -75,7 +66,23 @@ ProductSchema.plugin(mongooseDelete);
 ProductSchema.statics = {
   get(id) {
     return this.findById(id)
-      .populate('category combinations.attributes.attribute')
+      .populate('category')
+      .populate({
+        path: 'optionTypes',
+        model: 'OptionType',
+        populate: {
+          path: 'values',
+          model: 'OptionValue',
+        }
+      })
+      .populate({
+        path: 'variants',
+        model: 'Variant',
+        populate: {
+          path: 'options',
+          model: 'OptionValue',
+        },
+      })
       .then((product) => {
         if (product) {
           return product;
@@ -89,7 +96,23 @@ ProductSchema.statics = {
     return this.find({
       name: new RegExp(query, 'i')
     })
-    .populate('category combinations.attributes.attribute')
+    .populate('category')
+    .populate({
+      path: 'variants',
+      model: 'Variant',
+      populate: {
+        path: 'options',
+        model: 'OptionValue',
+      },
+    })
+    .populate({
+      path: 'optionTypes',
+      model: 'OptionType',
+      populate: {
+        path: 'values',
+        model: 'OptionValue',
+      }
+    })
     .sort({
       createdAt: -1
     })

@@ -1,6 +1,8 @@
+import Promise from 'bluebird';
+
 import Order from '../models/Order';
-import Customer from '../models/Customer';
-import Product from '../models/Product';
+import Variant from '../models/Variant';
+import User from '../models/User';
 import Thread from '../models/Thread';
 
 const load = (req, res, next, id) => {
@@ -15,7 +17,8 @@ const load = (req, res, next, id) => {
 const create = (req, res, next) => {
   const order = new Order({
     total: req.body.total,
-    customer: req.body.customer,
+    // customer: req.body.customer,
+    user: req.body.user,
     items: req.body.items,
     shipping: req.body.shipping,
     payment: req.body.payment,
@@ -25,21 +28,18 @@ const create = (req, res, next) => {
 
   order.statusLog.push({ status: 0 });
 
-  order.save()
-    .then(order => Customer.findById(order.customer).exec().then(customer => [order, customer]))
-    .then((result) => {
-      const order = result[0];
-      const customer = result[1];
+  Promise.all([
+    User.findById(req.body.user),
+    order.save()
+  ]).spread((user, order) => {
+    user.orders.push(order);
 
-      customer.orders.push(order);
-
-      customer.save().then(customer => [order, customer]);
-
-      return req.body.items;
-    })
-    .then(Order.updateProductQuantity)
-    .then(() => res.json({ message: 'Order created!', data: order }))
-    .catch(e => next(e));
+    return user.save();
+  })
+  .then(() => req.body.items)
+  .then(Order.updateProductQuantity)
+  .then(() => res.json({ message: 'Order created!', data: order }))
+  .catch(e => next(e));
 };
 
 const list = (req, res, next) => {
@@ -64,7 +64,7 @@ const addProduct = (req, res, next) => {
   const order = req.order;
   const body = req.body || {};
 
-  if (body.product) {
+  if (body.variant) {
     order.items.push(body);
   }
 
@@ -72,7 +72,7 @@ const addProduct = (req, res, next) => {
     .save()
     .then(() => [req.body])
     .then(Order.updateProductQuantity)
-    .then(() => Order.findById(order._id).populate('customer items.product shipping.value payment').exec())
+    .then(() => Order.findById(order._id).populate('customer items.variant shipping.value payment').exec())
     .then(savedOrder => res.json({ message: 'Order updated!', data: savedOrder }))
     .catch(e => next(e));
 };
@@ -137,6 +137,7 @@ const addMessage = (req, res, next) => {
 const update = (req, res, next) => {
   const order = req.order;
   const body = req.body || {};
+  const variantPromises = [];
 
   if (!order.statusLog.find(log => log.status === body.status) &&
     body.status !== null &&
@@ -152,14 +153,15 @@ const update = (req, res, next) => {
     let diff;
 
     body.items.forEach((item) => {
-      prevLine = order.items.find(i => i.product._id == item.product._id); /* eslint eqeqeq:0 */
+      prevLine = order.items.find(i => i.variant == item.variant._id); // eslint-disable-line eqeqeq
 
       diff = prevLine.quantity - item.quantity;
 
       // Check if there is a difference in quantity
       if (diff !== 0) {
-        Product.findByIdAndUpdate(item.product._id, { $inc: { quantity: diff } })
-          .catch(e => next(e));
+        variantPromises.push(
+          Variant.findByIdAndUpdate(item.variant._id, { $inc: { stock: diff } }).exec()
+        );
       }
     });
   }
@@ -172,11 +174,22 @@ const update = (req, res, next) => {
   order.shippingAddress = body.shippingAddress ? body.shippingAddress : order.shippingAddress;
   order.status = body.status ? body.status : order.status;
 
-  order
-    .save()
-    .then(() => Order.findById(order._id).populate('customer items.product shipping.value payment').exec())
-    .then(savedOrder => res.json({ message: 'Order updated!', data: savedOrder }))
-    .catch(e => next(e));
+  Promise.all([
+    order.save(),
+    Promise.all(variantPromises),
+  ]).spread((order, variants) => {    // eslint-disable-line no-unused-vars
+    const subtotal = order.items
+      .reduce((total, item) => total + (item.price * item.quantity), 0);
+
+    const shipping = order.shipping ? order.shipping.price : 0;
+
+    order.total = subtotal + shipping; // eslint-disable-line no-param-reassign
+
+    return order.save();
+  })
+  .then(() => Order.findById(order._id).populate('items.variant shipping.value payment').exec())
+  .then(savedOrder => res.json({ message: 'Order updated!', data: savedOrder }))
+  .catch(e => next(e));
 };
 
 export default {

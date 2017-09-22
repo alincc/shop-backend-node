@@ -13,7 +13,11 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   email: { type: String, required: true },
   customer: { type: Schema.Types.ObjectId, ref: 'Customer' },
-  ip: String
+  ip: String,
+  orders: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Order',
+  }],
 }, {
   timestamps: true
 });
@@ -21,7 +25,7 @@ const UserSchema = new Schema({
 UserSchema.statics = {
   get(id) {
     return this.findById(id)
-      .populate('customer')
+      .populate('customer orders')
       .exec()
       .then((user) => {
         if (user) {

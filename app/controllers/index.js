@@ -9,3 +9,6 @@ export { default as attributeCtrl } from './attribute.controller.js';
 export { default as messageCtrl } from './message.controller.js';
 export { default as threadCtrl } from './thread.controller.js';
 export { default as settingsCtrl } from './settings.controller.js';
+export { default as variantCtrl } from './variant.controller.js';
+export { default as optionTypeCtrl } from './option-type.controller.js';
+export { default as optionValueCtrl } from './option-value.controller.js';
